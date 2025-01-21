@@ -18,8 +18,8 @@ $db = $database->connect();
 
 
 try {
-    $stmt = $db->prepare("UPDATE carts SET shipped = 1 WHERE id = :id AND shipped = 0");
-    $stmt->bindParam(':id', $id);
+    $stmt = $db->prepare("UPDATE `carts` SET `shipped`= 1 WHERE id = :id AND shipped = 0");
+    $stmt->bindParam(':id', $cart_id);
     $stmt->execute();
 
     if ($stmt->rowCount() > 0) {

@@ -9,21 +9,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
 
     if (!empty($data['id'])) {
-        $query = "DELETE FROM categories WHERE id = :id";
-        $stmt = $db->prepare($query);
-
         try {
-            $stmt->bindParam(':id', $data['id'], PDO::PARAM_INT);
-            $stmt->execute();
+            // Start the transaction
+            $db->beginTransaction();
 
-            if ($stmt->rowCount() > 0) {
+            // Delete related products
+            $deleteProductsQuery = "DELETE FROM products WHERE category_id = :id";
+            $deleteProductsStmt = $db->prepare($deleteProductsQuery);
+            $deleteProductsStmt->bindParam(':id', $data['id'], PDO::PARAM_INT);
+            $deleteProductsStmt->execute();
+    
+            // Delete the category
+            $deleteCategoryQuery = "DELETE FROM categories WHERE id = :id";
+            $deleteCategoryStmt = $db->prepare($deleteCategoryQuery);
+            $deleteCategoryStmt->bindParam(':id', $data['id'], PDO::PARAM_INT);
+            $deleteCategoryStmt->execute();
+    
+            if ($deleteCategoryStmt->rowCount() > 0) {
+                $db->commit(); // Commit the transaction
                 echo json_encode(["message" => "Category deleted successfully."]);
             } else {
-                http_response_code(400); 
+                $db->rollBack(); // Roll back the transaction
+                http_response_code(400);
                 echo json_encode(["message" => "Category not found."]);
             }
         } catch (PDOException $e) {
-            http_response_code(400); 
+            $db->rollBack(); // Roll back the transaction
+            http_response_code(400);
             echo json_encode(["message" => "Failed to delete category.", "error" => $e->getMessage()]);
         }
     } else {

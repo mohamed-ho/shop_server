@@ -5,7 +5,7 @@ require_once '../config/Database.php';
 $database = new Database();
 $db = $database->connect();
 
-$query = "SELECT * FROM categories";
+$query = "SELECT * FROM categories ORDER BY id ASC";
 $stmt = $db->prepare($query);
 
 try {

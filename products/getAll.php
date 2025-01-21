@@ -5,6 +5,7 @@ require_once '../config/Database.php';
 $database = new Database();
 $db = $database->connect();
 
+try{
 $query = "SELECT * FROM products";
 $stmt = $db->prepare($query);
 $stmt->execute();
@@ -27,6 +28,10 @@ foreach ($products as $product) {
         ]
     ];
 }
-echo json_encode($structuredProducts);
+echo json_encode($structuredProducts);} 
+catch (PDOException $e) {
+    http_response_code(400);
+    echo json_encode(["message" => $e->getMessage()]);
+}
 ?>
                             
